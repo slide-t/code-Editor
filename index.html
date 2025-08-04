@@ -2,6 +2,204 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SmartKids Code Editor</title>
+  
+  <!-- CodeMirror CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+  
+  <style>
+    :root {
+      --bg: #0e0e23;
+      --panel: #1f1f38;
+      --accent: #ffcb6b;
+      --text: #ffffff;
+      --tab-bg: #282a36;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    header {
+      background: var(--panel);
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 1.2rem;
+    }
+
+    .tabs {
+      display: flex;
+      background: var(--panel);
+      justify-content: center;
+    }
+
+    .tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      background: var(--tab-bg);
+      border-bottom: 2px solid transparent;
+      transition: 0.3s;
+      color: #ccc;
+    }
+
+    .tab.active {
+      border-bottom: 2px solid var(--accent);
+      color: var(--accent);
+    }
+
+    .editor-container {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .editor {
+      display: none;
+      flex: 1;
+    }
+
+    .editor.active {
+      display: block;
+    }
+
+    iframe {
+      height: 35vh;
+      width: 100%;
+      border: none;
+      background: white;
+    }
+
+    .CodeMirror {
+      height: 100%;
+      font-size: 16px;
+      background: #1e1e3f;
+      color: #fff;
+    }
+
+    button.run-btn {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      padding: 10px 15px;
+      margin: 5px;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+  </style>
+</head>
+<body>
+
+  <header>
+    SmartKids Code Editor
+    <button class="run-btn" onclick="runCode()">▶ Run</button>
+  </header>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="html">HTML</div>
+    <div class="tab" data-tab="css">CSS</div>
+    <div class="tab" data-tab="js">JS</div>
+  </div>
+
+  <div class="editor-container">
+    <div class="editor active"><textarea id="htmlEditor"></textarea></div>
+    <div class="editor"><textarea id="cssEditor"></textarea></div>
+    <div class="editor"><textarea id="jsEditor"></textarea></div>
+  </div>
+
+  <iframe id="preview"></iframe>
+
+  <!-- CodeMirror Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closetag.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+
+  <script>
+    const tabs = document.querySelectorAll(".tab");
+    const editors = document.querySelectorAll(".editor");
+
+    tabs.forEach((tab, idx) => {
+      tab.addEventListener("click", () => {
+        tabs.forEach(t => t.classList.remove("active"));
+        editors.forEach(e => e.classList.remove("active"));
+        tab.classList.add("active");
+        editors[idx].classList.add("active");
+      });
+    });
+
+    // CodeMirror Setup
+    const htmlEditor = CodeMirror.fromTextArea(document.getElementById("htmlEditor"), {
+      mode: "htmlmixed",
+      theme: "dracula",
+      lineNumbers: true,
+      autoCloseTags: true,
+      autoCloseBrackets: true,
+    });
+
+    const cssEditor = CodeMirror.fromTextArea(document.getElementById("cssEditor"), {
+      mode: "css",
+      theme: "dracula",
+      lineNumbers: true,
+      autoCloseBrackets: true,
+    });
+
+    const jsEditor = CodeMirror.fromTextArea(document.getElementById("jsEditor"), {
+      mode: "javascript",
+      theme: "dracula",
+      lineNumbers: true,
+      autoCloseBrackets: true,
+    });
+
+    // Load saved code
+    htmlEditor.setValue(localStorage.getItem("htmlCode") || "<h1>Hello Kids!</h1>");
+    cssEditor.setValue(localStorage.getItem("cssCode") || "h1 { color: orange; text-align: center; }");
+    jsEditor.setValue(localStorage.getItem("jsCode") || "console.log('SmartKids!')");
+
+    // Save on change
+    [htmlEditor, cssEditor, jsEditor].forEach((editor, i) => {
+      editor.on("change", () => {
+        localStorage.setItem("htmlCode", htmlEditor.getValue());
+        localStorage.setItem("cssCode", cssEditor.getValue());
+        localStorage.setItem("jsCode", jsEditor.getValue());
+        runCode();
+      });
+    });
+
+    function runCode() {
+      const html = htmlEditor.getValue();
+      const css = `<style>${cssEditor.getValue()}</style>`;
+      const js = `<script>${jsEditor.getValue()}<\/script>`;
+      document.getElementById("preview").srcdoc = html + css + js;
+    }
+
+    runCode(); // Initial run
+  </script>
+</body>
+</html>
+
+
+
+
+<!--
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SmartKids Code Editor</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css" />
@@ -106,7 +304,7 @@
     <iframe id="output"></iframe>
   </div>
 
-  <!-- CodeMirror Scripts -->
+  <!-- CodeMirror Scripts --
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/javascript/javascript.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/css/css.min.js"></script>
