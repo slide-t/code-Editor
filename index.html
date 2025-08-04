@@ -3,182 +3,138 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SmartKids Code Editor</title>
+  <title>Code Editor</title>
   <style>
-    :root {
-      --bg-color: #ffffff;
-      --text-color: #000000;
-      --editor-bg: #f5f5f5;
-      --tab-color: #e0e0e0;
-      --active-tab: #cccccc;
-    }
-
-    body.dark {
-      --bg-color: #1e1e1e;
-      --text-color: #ffffff;
-      --editor-bg: #2d2d2d;
-      --tab-color: #3b3b3b;
-      --active-tab: #555;
-    }
-
     body {
-      background: var(--bg-color);
-      color: var(--text-color);
-      font-family: sans-serif;
       margin: 0;
-      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f0f0;
+      color: #000;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    body.dark-mode {
+      background: #121212;
+      color: #fff;
     }
 
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1rem;
-      background: var(--editor-bg);
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      padding: 1rem 1.5rem;
+      background: #0074D9;
+      color: #fff;
     }
 
     .tabs {
       display: flex;
+      background: #eaeaea;
+      padding: 0.5rem;
     }
 
-    .tab {
-      padding: 0.5rem 1rem;
-      background: var(--tab-color);
+    .tabs button {
+      background: transparent;
       border: none;
+      color: #333;
+      padding: 10px 16px;
       cursor: pointer;
-    }
-
-    .tab.active {
-      background: var(--active-tab);
       font-weight: bold;
+      transition: color 0.3s ease;
     }
 
-    .theme-switch {
-      cursor: pointer;
-      padding: 0.3rem 0.6rem;
-      background: #444;
-      color: #fff;
-      border: none;
-      border-radius: 5px;
+    .tabs button.active {
+      border-bottom: 2px solid #0074D9;
+      color: #0074D9;
     }
 
-    .editor-container {
-      display: flex;
-      flex-direction: column;
-      padding: 1rem;
+    body.dark-mode .tabs {
+      background: #1e1e1e;
+    }
+
+    body.dark-mode .tabs button {
+      color: #ccc;
+    }
+
+    body.dark-mode .tabs button.active {
+      color: #1E90FF;
+      border-bottom: 2px solid #1E90FF;
     }
 
     textarea {
       width: 100%;
       height: 200px;
-      background: var(--editor-bg);
-      color: var(--text-color);
-      border: 1px solid #ccc;
-      padding: 1rem;
-      font-family: monospace;
       display: none;
+      padding: 10px;
+      font-family: monospace;
+      font-size: 16px;
+      border: none;
+      outline: none;
+      resize: vertical;
+      box-sizing: border-box;
     }
 
     textarea.active {
       display: block;
     }
 
-    .run-btn {
-      margin: 1rem;
-      padding: 0.5rem 1rem;
-      background: #007bff;
+    #output {
+      width: 100%;
+      height: 300px;
+      border: 1px solid #ccc;
+      margin-top: 1rem;
+      background: #fff;
+    }
+
+    button#run {
+      background: #28a745;
       color: white;
       border: none;
-      border-radius: 5px;
+      padding: 10px 20px;
+      font-size: 16px;
       cursor: pointer;
+      margin: 1rem;
+      border-radius: 5px;
     }
 
-    iframe {
-      width: 100%;
-      height: 250px;
-      border: 1px solid #ddd;
+    #themeToggle {
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: white;
     }
-    /* Light mode default (body has no dark class) */
-.tabs button {
-  background: transparent;
-  border: none;
-  color: #333;
-  padding: 10px 16px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: color 0.3s ease;
-}
-
-.tabs button.active {
-  border-bottom: 2px solid #0074D9;
-  color: #0074D9;
-}
-
-/* Dark mode styles */
-body.dark-mode .tabs button {
-  color: #ddd;
-}
-
-body.dark-mode .tabs button.active {
-  color: #1E90FF;
-  border-bottom: 2px solid #1E90FF;
-      }
   </style>
 </head>
 <body>
-
   <header>
-
-<div class="tabs">
-  <button class="tab-btn active" data-tab="html">HTML</button>
-  <button class="tab-btn" data-tab="css">CSS</button>
-  <button class="tab-btn" data-tab="js">JS</button>
-</div>
-    
-    <!--
-    <div class="tabs">
-      <button class="tab active" data-tab="html">HTML</button>
-      <button class="tab" data-tab="css">CSS</button>
-      <button class="tab" data-tab="js">JS</button>
-    </div>
-    -->
-    <button class="theme-switch" id="themeToggle">🌙</button>
+    <h1>Code Editor</h1>
+    <button id="themeToggle">🌙</button>
   </header>
 
-  <div class="editor-container">
-    <textarea id="html" class="active" placeholder="Write your HTML here...">
-<h1>Hello SmartKids</h1>
-<p>Welcome to the online code editor!</p>
-    </textarea>
-
-    <textarea id="css" placeholder="Write your CSS here...">
-body { background: lightyellow; font-family: sans-serif; text-align: center; }
-h1 { color: darkgreen; }
-    </textarea>
-
-    <textarea id="js" placeholder="Write your JS here...">
-console.log('Hello from JavaScript!');
-    </textarea>
+  <div class="tabs">
+    <button class="tab active" data-tab="html">HTML</button>
+    <button class="tab" data-tab="css">CSS</button>
+    <button class="tab" data-tab="js">JS</button>
   </div>
 
-  <button class="run-btn" onclick="runCode()">Run ▶️</button>
+  <textarea id="html" class="active" placeholder="Write your HTML code here..."></textarea>
+  <textarea id="css" placeholder="Write your CSS code here..."></textarea>
+  <textarea id="js" placeholder="Write your JS code here..."></textarea>
 
+  <button id="run" onclick="runCode()">Run</button>
   <iframe id="output"></iframe>
 
   <script>
     // Theme toggle
     const toggleThemeBtn = document.getElementById("themeToggle");
 
-toggleThemeBtn.addEventListener("click", () => {
-  document.body.classList.toggle("dark-mode");
-});
-  /*  document.getElementById("themeToggle").addEventListener("click", function () {
-      document.body.classList.toggle("dark");
-      this.textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
-    });*/
+    toggleThemeBtn.addEventListener("click", function () {
+      document.body.classList.toggle("dark-mode");
+      this.textContent = document.body.classList.contains("dark-mode") ? "☀️" : "🌙";
+    });
 
-    // Tabs
+    // Tabs switching
     const tabs = document.querySelectorAll(".tab");
     const textareas = document.querySelectorAll("textarea");
 
@@ -191,7 +147,7 @@ toggleThemeBtn.addEventListener("click", () => {
       });
     });
 
-    // Run button
+    // Run code
     function runCode() {
       const html = document.getElementById("html").value;
       const css = `<style>${document.getElementById("css").value}</style>`;
@@ -199,8 +155,6 @@ toggleThemeBtn.addEventListener("click", () => {
       const output = document.getElementById("output");
       output.srcdoc = html + css + js;
     }
-    
   </script>
-
 </body>
 </html>
