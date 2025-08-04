@@ -126,6 +126,71 @@
   <iframe id="output"></iframe>
 
   <script>
+  // Theme Toggle
+  const toggleThemeBtn = document.getElementById("themeToggle");
+  toggleThemeBtn.addEventListener("click", () => {
+    document.body.classList.toggle("dark");
+    toggleThemeBtn.textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
+  });
+
+  // Tabs
+  const tabs = document.querySelectorAll(".tab");
+  const textareas = document.querySelectorAll("textarea");
+
+  tabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+      tabs.forEach(t => t.classList.remove("active"));
+      textareas.forEach(ta => ta.classList.remove("active"));
+      tab.classList.add("active");
+      document.getElementById(tab.dataset.tab).classList.add("active");
+    });
+  });
+
+  // Auto Save + Auto Preview
+  function runCode() {
+    const html = document.getElementById("html").value;
+    const css = `<style>${document.getElementById("css").value}</style>`;
+    const js = `<script>${document.getElementById("js").value}<\/script>`;
+    document.getElementById("output").srcdoc = html + css + js;
+
+    // Save to localStorage
+    localStorage.setItem("code-html", html);
+    localStorage.setItem("code-css", document.getElementById("css").value);
+    localStorage.setItem("code-js", document.getElementById("js").value);
+  }
+
+  // Load from localStorage on page load
+  window.addEventListener("load", () => {
+    if (localStorage.getItem("code-html")) {
+      document.getElementById("html").value = localStorage.getItem("code-html");
+      document.getElementById("css").value = localStorage.getItem("code-css");
+      document.getElementById("js").value = localStorage.getItem("code-js");
+      runCode();
+    }
+  });
+
+  // Run on input change
+  ["html", "css", "js"].forEach(id => {
+    document.getElementById(id).addEventListener("input", runCode);
+  });
+
+  // OPTIONAL: Simple HTML Tag Autocomplete (basic)
+  document.getElementById("html").addEventListener("input", function (e) {
+    const val = this.value;
+    const lastChar = val.slice(-1);
+    if (lastChar === ">") {
+      const openTags = val.match(/<([a-z0-9]+)(?=\s|>|$)/gi);
+      if (openTags && openTags.length) {
+        const lastTag = openTags[openTags.length - 1].replace("<", "");
+        if (!val.includes(`</${lastTag}>`)) {
+          this.value += `</${lastTag}>`;
+        }
+      }
+    }
+  });
+  </script>
+<!--
+  <script>
     // Theme toggle
     const toggleThemeBtn = document.getElementById("themeToggle");
 
@@ -156,5 +221,6 @@
       output.srcdoc = html + css + js;
     }
   </script>
+  -->
 </body>
 </html>
