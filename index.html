@@ -1,3 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SmartKids Code Editor</title>
+
+  <!-- CodeMirror -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Comic Sans MS', cursive;
+      background: #f4f9ff;
+      color: #222;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    body.dark {
+      background: #1e1e1e;
+      color: #eee;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #00bcd4;
+      padding: 1rem;
+      color: white;
+    }
+
+    .header h1 {
+      font-size: 1.5rem;
+      margin: 0;
+    }
+
+    .header button {
+      font-size: 1.5rem;
+      background: transparent;
+      border: none;
+      color: white;
+      cursor: pointer;
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: center;
+      background: #e0f7fa;
+      border-bottom: 2px solid #00bcd4;
+    }
+
+    .tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      font-weight: bold;
+      border-radius: 8px 8px 0 0;
+      margin: 0 5px;
+      background: #b2ebf2;
+    }
+
+    .tab.active {
+      background: #00bcd4;
+      color: white;
+    }
+
+    #editors {
+      display: flex;
+      flex-direction: column;
+      height: 300px;
+    }
+
+    .editor {
+      display: none;
+      height: 100%;
+    }
+
+    .editor.active {
+      display: block;
+    }
+
+    #output {
+      height: 250px;
+      border: 2px solid #00bcd4;
+      width: 100%;
+      margin-top: 10px;
+      border-radius: 10px;
+    }
+
+    .run-btn {
+      display: block;
+      margin: 10px auto;
+      padding: 10px 20px;
+      background: #00bcd4;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    body.dark .tabs {
+      background: #2e2e2e;
+    }
+
+    body.dark .tab {
+      background: #444;
+      color: #ccc;
+    }
+
+    body.dark .tab.active {
+      background: #00bcd4;
+      color: white;
+    }
+
+    body.dark .run-btn {
+      background: #0097a7;
+    }
+
+    body.dark #output {
+      border-color: #0097a7;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>SmartKids Code Editor</h1>
+    <button id="themeToggle">🌙</button>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="htmlEditor">HTML</div>
+    <div class="tab" data-tab="cssEditor">CSS</div>
+    <div class="tab" data-tab="jsEditor">JS</div>
+  </div>
+
+  <div id="editors">
+    <div class="editor active"><textarea id="htmlEditor"></textarea></div>
+    <div class="editor"><textarea id="cssEditor"></textarea></div>
+    <div class="editor"><textarea id="jsEditor"></textarea></div>
+  </div>
+
+  <button class="run-btn" onclick="runCode()">Run</button>
+  <iframe id="output"></iframe>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+
+  <script>
+    const editors = {
+      html: CodeMirror.fromTextArea(document.getElementById("htmlEditor"), {
+        mode: "htmlmixed",
+        theme: "material-darker",
+        lineNumbers: true,
+        autoCloseTags: true,
+      }),
+      css: CodeMirror.fromTextArea(document.getElementById("cssEditor"), {
+        mode: "css",
+        theme: "material-darker",
+        lineNumbers: true,
+        autoCloseBrackets: true,
+      }),
+      js: CodeMirror.fromTextArea(document.getElementById("jsEditor"), {
+        mode: "javascript",
+        theme: "material-darker",
+        lineNumbers: true,
+        autoCloseBrackets: true,
+      })
+    };
+
+    // Theme toggle
+    const toggleThemeBtn = document.getElementById("themeToggle");
+    toggleThemeBtn.addEventListener("click", () => {
+      document.body.classList.toggle("dark");
+      toggleThemeBtn.textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
+    });
+
+    // Tabs
+    const tabs = document.querySelectorAll(".tab");
+    const editorDivs = document.querySelectorAll(".editor");
+
+    tabs.forEach((tab, index) => {
+      tab.addEventListener("click", () => {
+        tabs.forEach(t => t.classList.remove("active"));
+        editorDivs.forEach(e => e.classList.remove("active"));
+        tab.classList.add("active");
+        editorDivs[index].classList.add("active");
+        setTimeout(() => editors[Object.keys(editors)[index]].refresh(), 100);
+      });
+    });
+
+    // Auto save
+    Object.entries(editors).forEach(([key, editor]) => {
+      const saved = localStorage.getItem(key + "Code");
+      if (saved) editor.setValue(saved);
+      editor.on("change", () => {
+        localStorage.setItem(key + "Code", editor.getValue());
+        runCode();
+      });
+    });
+
+    // Run output
+    function runCode() {
+      const html = editors.html.getValue();
+      const css = `<style>${editors.css.getValue()}</style>`;
+      const js = `<script>${editors.js.getValue()}<\/script>`;
+      const output = document.getElementById("output");
+      output.srcdoc = html + css + js;
+    }
+
+    // Initial run
+    runCode();
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+<!--
+
 <!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8" />
